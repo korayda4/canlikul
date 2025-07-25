@@ -2,10 +2,16 @@ import React from 'react';
 import { StyleSheet, View, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { Video } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/RootTypes';
+import { useNavigation } from '@react-navigation/native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const Slider: React.FC = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
@@ -15,7 +21,7 @@ const Slider: React.FC = () => {
           isLooping
           shouldPlay
           isMuted
-          resizeMode='cover'
+          resizeMode="cover"
         />
 
         <LinearGradient
@@ -34,7 +40,7 @@ const Slider: React.FC = () => {
           </View>
 
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AboutScreen')}>
               <Text style={styles.buttonText}>Hakkımızda</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button}>

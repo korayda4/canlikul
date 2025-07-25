@@ -2,13 +2,13 @@
   "expo": {
     "name": "canlikul",
     "slug": "canlikul",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/canlilogo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/canlilogo-splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,14 +16,30 @@
       "supportsTablet": true
     },
     "android": {
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/canlilogo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.canlikul"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/canlilogo.png"
+    },
+    "plugins": [
+      "expo-audio",
+      "expo-video"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ee84706b-12c3-4134-93e0-b95263253fbd"
+      }
     }
   }
 }

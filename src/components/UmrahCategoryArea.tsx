@@ -1,18 +1,34 @@
 import React from 'react';
-import { View, FlatList, StyleSheet, Dimensions } from 'react-native';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
 import UmrahCard from './UmrahCard';
 import { UmrahCategoryAreaProps } from '../types/UmrahCategoryTypes';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/RootTypes';
 
 const UmrahCategoryArea: React.FC<UmrahCategoryAreaProps> = ({ categories }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { width } = useWindowDimensions();
 
-  const renderItem = ({ item }: { item: typeof categories[0] }) => (
-    <View style={styles.cardWrapper}>
+  const numColumns = 2;
+  const CARD_MARGIN = 8;
+  const cardWidth = (width - CARD_MARGIN * (numColumns * 2) - 24) / numColumns;
+
+  const renderItem = ({ item, index }: { item: typeof categories[0]; index: number }) => (
+    <View style={[styles.cardWrapper, { width: cardWidth }]}>
       <UmrahCard
-        imageSource={item.image}
+        key={item.id}
+        type={index}
+        image={item.image}
         title={item.title}
-        onPress={() => {}}
+        onPress={() => {
+          navigation.navigate('UmrahCategoryScreen', { type: index });
+        }}
       />
     </View>
   );
@@ -22,7 +38,7 @@ const UmrahCategoryArea: React.FC<UmrahCategoryAreaProps> = ({ categories }) => 
       data={categories}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
-      numColumns={1} // flexbox ile sarmalıyoruz, FlatList sadece scroll işini yapacak
+      numColumns={numColumns}
       contentContainerStyle={styles.listContainer}
       showsVerticalScrollIndicator={false}
       scrollEnabled={false}
@@ -32,17 +48,12 @@ const UmrahCategoryArea: React.FC<UmrahCategoryAreaProps> = ({ categories }) => 
 
 const styles = StyleSheet.create({
   listContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',   // alt satıra kaydırır
-    justifyContent: 'center', // ortalar
+    justifyContent: 'center',
     paddingHorizontal: 12,
-    marginTop: 16,
+    paddingBottom: 100,
   },
   cardWrapper: {
-    minWidth: 350,
-    flex: 1,
-    marginHorizontal: 8,
+    margin: 8,
   },
 });
 

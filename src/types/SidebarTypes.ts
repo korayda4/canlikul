@@ -6,4 +6,6 @@ export interface SidebarProps {
 export interface DropdownItemProps {
   title: string;
   items: string[];
+  onClose: () => void;
+  description?: string;
 }

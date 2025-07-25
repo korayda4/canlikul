@@ -1,48 +1,123 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ImageBackground,
   Dimensions,
-} from 'react-native';
-import { MapPin } from 'phosphor-react-native';
+} from "react-native";
+import { MapPin } from "phosphor-react-native";
+import { ActivityIndicator } from "react-native";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { useNextPrayerTime } from "../hooks/UseNextPrayerTime";
 
-const PRAYERS = ['Sabah', 'Öğle', 'İkindi', 'Akşam', 'Yatsı'];
-const ACTIVE_PRAYER = 'Akşam'; // Şimdilik hardcoded
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const PRAYERS: { [key: string]: string } = {
+  Imsak: "İmsak",
+  Sunrise: "Güneş",
+  Dhuhr: "Öğle",
+  Asr: "İkindi",
+  Maghrib: "Akşam",
+  Isha: "Yatsı",
+};
 
 const EzanTimeCard: React.FC = () => {
+  const { data } = useNextPrayerTime();
+  const [activePrayer, setActivePrayer] = useState<string>("");
+  const [nextPrayerTime, setNextPrayerTime] = useState<string>("");
+  const [countdown, setCountdown] = useState("Yükleniyor");
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
+    if (data?.name && data?.time) {
+      setActivePrayer(data?.name);
+      setNextPrayerTime(data?.time);
+    }
+  }, [data]);
 
-  const formatTime = (date: Date) => {
-    return date
-      .toLocaleTimeString('tr-TR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
-      .replace(/\./g, ':');
+  const convertToDateTime = (time: string): Date => {
+    const [hours, minutes, seconds] = time.split(":").map(Number);
+    const now = new Date();
+
+    const target = new Date(now);
+    target.setHours(hours);
+    target.setMinutes(minutes);
+    target.setSeconds(seconds ?? 0);
+    target.setMilliseconds(0);
+
+    if (target <= now) {
+      target.setDate(target.getDate() + 1);
+    }
+
+    return target;
   };
+
+  const calculateCountdown = (targetTime: Date, currentTime: Date): string => {
+    const diffMs = targetTime.getTime() - currentTime.getTime();
+    if (diffMs <= 0) {
+      return "00:00:00";
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  };
+
+  useEffect(() => {
+    if (!nextPrayerTime) return;
+
+    const targetTime = convertToDateTime(nextPrayerTime);
+
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+      setCountdown(calculateCountdown(targetTime, new Date()));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [nextPrayerTime]);
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('tr-TR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
+    return date.toLocaleDateString("tr-TR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
     });
   };
+
+  if (!data) {
+    return (
+      <View style={styles.wrapper}>
+      <ImageBackground
+        source={require("../../assets/ezantime.jpg")}
+        style={styles.image}
+        imageStyle={{ borderRadius: 16 }}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay} />
+
+        <ActivityIndicator
+          size="large"
+          color="#fff"
+          style={{ position: "absolute", top: "50%", left: "50%", transform: [{ translateX: -20 }, { translateY: -20 }] }}
+        />
+
+        <View style={styles.bottomRight}>
+          <Text style={styles.bottomText}>{formatDate(currentTime)}</Text>
+        </View>
+      </ImageBackground>
+    </View>
+    );
+  }
 
   return (
     <View style={styles.wrapper}>
       <ImageBackground
-        source={require('../../assets/ezantime.jpg')}
+        source={require("../../assets/ezantime.jpg")}
         style={styles.image}
         imageStyle={{ borderRadius: 16 }}
         resizeMode="cover"
@@ -50,12 +125,12 @@ const EzanTimeCard: React.FC = () => {
         <View style={styles.overlay} />
 
         <View style={styles.prayerNamesRow}>
-          {PRAYERS.map((prayer, index) => (
+          {Object.values(PRAYERS).map((prayer, index) => (
             <Text
               key={index}
               style={[
                 styles.prayerName,
-                prayer === ACTIVE_PRAYER && styles.activePrayer,
+                prayer === PRAYERS[activePrayer] && styles.activePrayer,
               ]}
             >
               {prayer}
@@ -64,13 +139,10 @@ const EzanTimeCard: React.FC = () => {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.nextPrayer}>{ACTIVE_PRAYER} ezanına kalan süre</Text>
-          <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
-        </View>
-
-        <View style={styles.bottomLeft}>
-          <MapPin size={18} color="#fff" weight="regular" />
-          <Text style={styles.bottomText}>İstanbul</Text>
+          <Text style={styles.nextPrayer}>
+            {PRAYERS[activePrayer]} ezanına kalan süre
+          </Text>
+          <Text style={styles.timeText}>{countdown}</Text>
         </View>
 
         <View style={styles.bottomRight}>
@@ -86,75 +158,75 @@ const styles = StyleSheet.create({
     margin: 16,
     marginBottom: 0,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 6,
   },
   image: {
     width: SCREEN_WIDTH - 32,
-    height: 200,
-    justifyContent: 'center',
+    height: 160,
+    justifyContent: "center",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: "rgba(0,0,0,0.4)",
     borderRadius: 16,
   },
   prayerNamesRow: {
-    position: 'absolute',
+    position: "absolute",
     top: 12,
     left: 16,
     right: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   prayerName: {
     fontSize: 13,
-    color: '#eee',
+    color: "#eee",
     opacity: 0.5,
-    fontWeight: '400',
+    fontWeight: "400",
   },
   activePrayer: {
-    color: '#fff',
+    color: "#fff",
     opacity: 1,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
+    fontWeight: "700",
+    textDecorationLine: "underline",
   },
   content: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   nextPrayer: {
     fontSize: 14,
-    color: '#eee',
-    fontWeight: '300',
+    color: "#eee",
+    fontWeight: "300",
     marginBottom: 6,
   },
   timeText: {
     fontSize: 36,
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   bottomLeft: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 12,
     left: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   bottomRight: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 12,
     right: 16,
   },
   bottomText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 13,
-    fontWeight: '400',
+    fontWeight: "400",
   },
 });
 

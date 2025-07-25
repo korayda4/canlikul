@@ -8,110 +8,161 @@ import {
   Platform,
   UIManager,
 } from "react-native";
-import { CaretDown, CaretUp, CaretRight } from "phosphor-react-native";
+import { CaretDown, CaretUp, CaretRight, MapPin } from "phosphor-react-native";
+import { useNavigation } from "@react-navigation/native";
 import { DropdownItemProps } from "../types/SidebarTypes";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../types/RootTypes";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental &&
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const DropdownItem: React.FC<DropdownItemProps> = ({ title, items }) => {
+const DropdownItem: React.FC<DropdownItemProps> = ({
+  title,
+  items,
+  description,
+  onClose,
+}) => {
   const [expanded, setExpanded] = useState(false);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const toggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpanded(!expanded);
   };
 
+  const handleItemPress = (item: string) => {
+    switch (item) {
+      case "Ekonomik Umre Turları (SERVİSLİ)":
+        navigation.navigate("UmrahCategoryScreen", { type: 0 });
+        break;
+      case "Lüks Servisli Umre Turları":
+        navigation.navigate("UmrahCategoryScreen", { type: 1 });
+        break;
+      case "Ekonomik Umre Turları (Yürüme Mesafesi)":
+        navigation.navigate("UmrahCategoryScreen", { type: 2 });
+        break;
+      case "40 vakitli umre turları":
+        navigation.navigate("UmrahCategoryScreen", { type: 3 });
+        break;
+      case "5 yıldızlı umre turları":
+        navigation.navigate("UmrahCategoryScreen", { type: 4 });
+        break;
+      case "Ekonomik Hac":
+      case "Lüks hac vizeli program":
+      case "5 Yıldızlı Hac":
+        navigation.navigate("HajjTourScreen" as never);
+        break;
+      default:
+        break;
+    }
+
+    onClose();
+  };
+
   return (
     <View style={styles.container}>
+      {/* Başlık */}
       <TouchableOpacity
-        style={[styles.header, expanded && styles.headerExpanded]}
         onPress={toggle}
         activeOpacity={0.8}
+        style={styles.itemContainer}
       >
-        <Text style={[styles.headerText, expanded && { color: "#fff" }]}>
-          {title}
-        </Text>
-        {expanded ? (
-          <CaretUp size={18} color="#fff" />
-        ) : (
-          <CaretDown size={18} color="#ec6e2b" />
-        )}
+        <View style={styles.itemInner}>
+          <View style={styles.iconBackground}>
+            <MapPin weight="fill" size={24} color="#ec6e2b" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.itemText}>{title}</Text>
+            {description ? (
+              <Text style={styles.itemDescription}>{description}</Text>
+            ) : null}
+          </View>
+          <View style={styles.arrowIcon}>
+            {expanded ? (
+              <CaretUp weight="light" size={24} color={expanded ? "#ec6e2b" : "#c4c4c4ff"} />
+            ) : (
+              <CaretDown size={24} color={expanded ? "#ec6e2b" : "#c4c4c4ff"} />
+            )}
+          </View>
+        </View>
+        <View style={styles.separator} />
       </TouchableOpacity>
+
+      {/* Açılan alt itemler */}
       {expanded && (
         <View style={styles.body}>
           {items.map((item, index) => (
-            <View key={index} style={styles.itemContainer}>
-              <CaretRight
-                size={16}
-                color="#ec6e2b"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.itemText}>{item}</Text>
+            <View key={index}>
+              <TouchableOpacity
+                onPress={() => handleItemPress(item)}
+                style={styles.subItemContainer}
+                activeOpacity={0.7}
+              >
+                <CaretRight size={16} color="#ec6e2b" style={{ marginRight: 8 }} />
+                <Text style={styles.subItemText}>{item}</Text>
+              </TouchableOpacity>
+              {index < items.length - 1 && <View style={styles.separator} />}
             </View>
           ))}
         </View>
       )}
-      
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 10,
+  container: {},
+  itemContainer: {
+    backgroundColor: "transparent",
+    paddingVertical: 12,
   },
-  header: {
-    backgroundColor: "#fff",
-    borderColor: "#ec6e2b",
-    borderLeftWidth:12,
-    borderWidth: 0,
-    borderRadius: 8,
-    shadowColor: "#000",
-    marginRight:10,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation:4,
-    borderTopLeftRadius:4,
-    borderBottomLeftRadius:4,
-    padding: 12,
+  itemInner: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+  iconBackground: {
+    backgroundColor: "#ffe6cc",
+    padding: 8,
+    borderRadius: 8,
+    justifyContent: "center",
     alignItems: "center",
   },
-  headerExpanded: {
-    backgroundColor: "#ec6e2b",
+  itemText: {
+    fontSize: 15,
+    fontWeight: '300',
+    color: '#000',
+    marginBottom: 2,
   },
-  headerText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+  itemDescription: {
+    fontSize: 13,
+    fontWeight: "300",
+    color: "#888",
+    marginTop: 2,
   },
-
+  arrowIcon: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#e6e6e6",
+    marginTop: 10,
+  },
   body: {
     marginTop: 8,
   },
-  itemContainer: {
+  subItemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    marginRight:6,
     paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginLeft:16,
-    borderRadius: 8,
-    borderWidth: 0,
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
-    elevation: 2,
-    borderColor: "#ec6e2b",
-    marginBottom: 8,
+    paddingLeft: 56, // Başlıktaki ikon ile hizalanması için
+    backgroundColor: "transparent",
   },
-  itemText: {
+  subItemText: {
     fontSize: 15,
     color: "#333",
     flexShrink: 1,

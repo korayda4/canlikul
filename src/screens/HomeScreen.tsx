@@ -8,11 +8,10 @@ import {
 } from "react-native";
 import MainNavbar from "../components/Navbar";
 import Slider from "../components/Slider";
-import FeatureCards from "../components/FeatureCards";
 import UmrahCategoryArea from "../components/UmrahCategoryArea";
 import EzanTimeCard from "../components/EzanTimeCard";
 import EzanStickyBar from "../components/EzanStickyBar";
-import ZikirmatikCard from "../components/ZikirmatikCard";
+import TopAyah from "../components/TopAyah";
 
 const EZAN_CARD_HEIGHT = 180; // EzanTimeCard sabit yüksekliği
 
@@ -26,7 +25,8 @@ const HomeScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Sticky bar sabit pozisyonda (gizli olabilir) */}
+
+
       {showSticky && (
         <View style={styles.stickyBarWrapper}>
           <EzanStickyBar />
@@ -34,42 +34,36 @@ const HomeScreen = () => {
       )}
 
       <ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
-        <ZikirmatikCard />
+        <TopAyah />
         <EzanTimeCard />
-        <Slider />
-        <FeatureCards />
+        {/* <Slider /> */}
         <UmrahCategoryArea
           categories={[
             {
               id: "1",
               title: "Ekonomik Umre Turları (Servisli)",
-              image: { uri: "https://placehold.co/600x400" },
+              image: require("../../assets/kabe.jpg"),
             },
             {
               id: "2",
               title: "Lüks Servisli Umre Turları",
-              image: { uri: "https://placehold.co/600x400" },
+              image: require("../../assets/uhud.jpg")
             },
             {
               id: "3",
-              title: "Ekonomik Umre Turları (Yürüme Mesafesi)",
-              image: { uri: "https://placehold.co/600x400" },
+              title: "Ekonomik Umre Turları (Yürüme)",
+              image: require("../../assets/mina.jpg")
             },
             {
               id: "4",
               title: "Kırk Vakitli Umre Turları",
-              image: { uri: "https://placehold.co/600x400" },
+              image: require("../../assets/ihram.jpg")
             },
             {
               id: "5",
               title: "5 Yıldızlı Umre Turları",
-              image: { uri: "https://placehold.co/600x400" },
-            },
-            {
-              id: "6",
-              title: "Örnek Umre Programı",
-              image: { uri: "https://placehold.co/600x400" },
-            },
+              image:  require("../../assets/kibleteyn.jpg")
+            }
           ]}
         />
       </ScrollView>
